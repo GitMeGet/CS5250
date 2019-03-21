@@ -38,8 +38,23 @@ int onebyte_release(struct inode *inode, struct file *filep)
 } 
   
 ssize_t onebyte_read(struct file *filep, char *buf, size_t count, loff_t *f_pos) 
-{ 
-	/*please complete the function on your own*/ 
+{ 	
+	if (onebyte_data == NULL){
+		printk(KERN_INFO "onebyte: onebyte_data is a null ptr\n");
+		return -EFAULT;
+	}
+
+	int error_count = 0;
+	// copy_to_user has the format ( * to, *from, size) and returns 0 on success
+	error_count = copy_to_user(buf, onebyte_data, sizeof(char));
+
+	if (error_count==0){
+		return sizeof(char);
+	}
+	else {
+	  printk(KERN_INFO "onebyte: failed to send %d char to user\n", error_count);
+	  return -EFAULT;              // Failed -- return a bad address message (i.e. -14)
+	}
 } 
 ssize_t onebyte_write(struct file *filep, const char *buf, size_t count, loff_t *f_pos) 
 { 
