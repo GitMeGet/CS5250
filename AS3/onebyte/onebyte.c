@@ -7,6 +7,7 @@
 #include <linux/fs.h> 
 #include <linux/proc_fs.h> 
 #include <asm/uaccess.h> 
+#include <linux/uaccess.h>
   
 #define MAJOR_NUMBER 61 
   
@@ -39,12 +40,13 @@ int onebyte_release(struct inode *inode, struct file *filep)
   
 ssize_t onebyte_read(struct file *filep, char *buf, size_t count, loff_t *f_pos) 
 { 	
+	int error_count = 0;
+	
 	if (onebyte_data == NULL){
 		printk(KERN_INFO "onebyte: onebyte_data is a null ptr\n");
 		return -EFAULT;
 	}
 
-	int error_count = 0;
 	// copy_to_user has the format ( * to, *from, size) and returns 0 on success
 	error_count = copy_to_user(buf, onebyte_data, sizeof(char));
 
@@ -67,6 +69,7 @@ ssize_t onebyte_write(struct file *filep, const char *buf, size_t count, loff_t 
 			printk(KERN_INFO "onebyte: only first byte will be written to char device\n");
 		}
 	}
+	return 0;
 } 
   
 static int onebyte_init(void) 
