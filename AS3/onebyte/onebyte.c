@@ -66,13 +66,19 @@ ssize_t onebyte_read(struct file *filep, char *buf, size_t count, loff_t *f_pos)
 ssize_t onebyte_write(struct file *filep, const char *buf, size_t count, loff_t *f_pos) 
 { 
 	if (count > 0){
+		// byte already written to buf
+		if (*buf == *onebyte_data)
+			return 0;
+
 		// get first char from user buffer
 		copy_from_user(onebyte_data, buf, sizeof(char));
 
 		if (count > 1) {
 			// show error msg
-			printk(KERN_INFO "onebyte: only first byte will be written to char device\n");
+			printk(KERN_INFO "No space left on device\n");
+			return -ENOSPC;
 		}
+		return sizeof(char);
 	}
 	return 0;
 } 
