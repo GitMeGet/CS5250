@@ -3,9 +3,14 @@
 #include <linux/module.h> 
 MODULE_LICENSE("GPL"); 
 
+static char *who = "blah";
+
+module_param(who, charp, 0000);
+MODULE_PARM_DESC(who, "<who> string");
+
 static int hello_init(void) 
 { 
-	printk(KERN_ALERT "Hello, world\n"); 
+	printk(KERN_ALERT "Hello, %s\n", who); 
 	return 0; 
 } 
 
