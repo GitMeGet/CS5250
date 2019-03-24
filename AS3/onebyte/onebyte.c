@@ -42,6 +42,11 @@ ssize_t onebyte_read(struct file *filep, char *buf, size_t count, loff_t *f_pos)
 { 	
 	int error_count = 0;
 	
+	// check if buf has been written to by previous call to onebyte_read()
+	// but what if i want to write 0?
+	if (*buf != 0)
+		return 0;
+
 	if (onebyte_data == NULL){
 		printk(KERN_INFO "onebyte: onebyte_data is a null ptr\n");
 		return -EFAULT;
