@@ -43,7 +43,7 @@ ssize_t onebyte_read(struct file *filep, char *buf, size_t count, loff_t *f_pos)
 	int error_count = 0;
 	
 	// check if buf has been written to by previous call to onebyte_read()
-	// but what if i want to write 0?
+	// but what if i want to write 0 (null char) ?
 	if (*buf != 0)
 		return 0;
 
@@ -60,27 +60,19 @@ ssize_t onebyte_read(struct file *filep, char *buf, size_t count, loff_t *f_pos)
 	}
 	else {
 	  printk(KERN_INFO "onebyte: failed to send %d char to user\n", error_count);
-	  return -EFAULT;              // Failed -- return a bad address message (i.e. -14)
+	  return -EFAULT;
 	}
 } 
 ssize_t onebyte_write(struct file *filep, const char *buf, size_t count, loff_t *f_pos) 
 { 
-	if (count > 0){
-		// byte already written to buf
-		if (*buf == *onebyte_data)
-			return 0;
+	// get first char from user buffer
+	copy_from_user(onebyte_data, buf, sizeof(char));
 
-		// get first char from user buffer
-		copy_from_user(onebyte_data, buf, sizeof(char));
-
-		if (count > 1) {
-			// show error msg
-			printk(KERN_INFO "No space left on device\n");
-			return -ENOSPC;
-		}
-		return sizeof(char);
+	if (count > sizeof(char)) {
+		printk(KERN_INFO "No space left on device\n");
+		return -ENOSPC;
 	}
-	return 0;
+	return sizeof(char);
 } 
   
 static int onebyte_init(void) 
