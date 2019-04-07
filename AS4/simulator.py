@@ -42,13 +42,17 @@ def FCFS_scheduling(process_list):
 #Output_2 : Average Waiting Time
 def RR_scheduling(process_list, time_quantum ):
     curr_time = 0
-    sched_idx = 0
+    curr_quantum = 0
+    num_tasks = len(process_list)
     sched_queue = list()
-    waiting_time_list = list(len(process_list))
+    
+    schedule = list()
+    waiting_time = 0
 
     # while process_list not empty
-    while len(process_list) != 0: 
-        curr_quantum = time_quantum
+    while len(process_list) != 0:
+        if curr_quantum == 0:
+            curr_quantum = time_quantum
     
         # check process_list for task arrival (curr_time >= task_arrival_t)
         if curr_time >= process_list[0].arrive_time:
@@ -56,31 +60,30 @@ def RR_scheduling(process_list, time_quantum ):
             new_process = process_list.pop(0)
             # add task into circular queue
             sched_queue.append(new_process)
-            # update task waiting time
-            new_process_wait_t = curr_time - new_process.arrive_time
-            waiting_time_list[new_process.id] = new_process_wait_t
+            # update total waiting time
+            waiting_time += curr_time - new_process.arrive_time
         
-        # while curr_quantum not up
-        while curr_quantum != 0:
-            # schedule task for time_quantum from circular queue
-            curr_process = sched_queue[sched_idx]
-            if curr_quantum < curr_process.burst_time:
-                curr_time += time_quantum
-                curr_quantum = 0
-                curr_process.burst_time -= curr_quantum
-            else:
-                curr_time += curr_quantum - curr_process.burst_time
-                curr_quantum -= curr_process.burst_time
-                # remove curr_process from sched_queue
-            
-            # update sched_idx
-            # update schedule
-            
-        # update sched_idx
+        # pop task from circular queue
+        curr_process = sched_queue.pop(0)
+        # update schedule
+        schedule.append(curr_time, curr_process.id)
+        
+        # curr_process not done executing 
+        if curr_quantum < curr_process.burst_time:
+            curr_time += time_quantum
+            curr_quantum = 0
+            curr_process.burst_time -= curr_quantum
+            # re-insert task into circular queue since it's not done
+            sched_queue.append(curr_process)
+        # curr_process done
+        else:
+            curr_time += curr_quantum - curr_process.burst_time
+            curr_quantum -= curr_process.burst_time   
             
     # compute average_waiting_time
+    average_waiting_time = waiting_time/float(len(num_tasks))
     
-    return (["to be completed, scheduling process_list on round robin policy with time_quantum"], 0.0)
+    return schedule, average_waiting_time
 
 def SRTF_scheduling(process_list):
     return (["to be completed, scheduling process_list on SRTF, using process.burst_time to calculate the remaining time of the current process "], 0.0)
