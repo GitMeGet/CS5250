@@ -41,6 +41,45 @@ def FCFS_scheduling(process_list):
 #Output_1 : Schedule list contains pairs of (time_stamp, proccess_id) indicating the time switching to that proccess_id
 #Output_2 : Average Waiting Time
 def RR_scheduling(process_list, time_quantum ):
+    curr_time = 0
+    sched_idx = 0
+    sched_queue = list()
+    waiting_time_list = list(len(process_list))
+
+    # while process_list not empty
+    while len(process_list) != 0: 
+        curr_quantum = time_quantum
+    
+        # check process_list for task arrival (curr_time >= task_arrival_t)
+        if curr_time >= process_list[0].arrive_time:
+            # remove task from process_list
+            new_process = process_list.pop(0)
+            # add task into circular queue
+            sched_queue.append(new_process)
+            # update task waiting time
+            new_process_wait_t = curr_time - new_process.arrive_time
+            waiting_time_list[new_process.id] = new_process_wait_t
+        
+        # while curr_quantum not up
+        while curr_quantum != 0:
+            # schedule task for time_quantum from circular queue
+            curr_process = sched_queue[sched_idx]
+            if curr_quantum < curr_process.burst_time:
+                curr_time += time_quantum
+                curr_quantum = 0
+                curr_process.burst_time -= curr_quantum
+            else:
+                curr_time += curr_quantum - curr_process.burst_time
+                curr_quantum -= curr_process.burst_time
+                # remove curr_process from sched_queue
+            
+            # update sched_idx
+            # update schedule
+            
+        # update sched_idx
+            
+    # compute average_waiting_time
+    
     return (["to be completed, scheduling process_list on round robin policy with time_quantum"], 0.0)
 
 def SRTF_scheduling(process_list):
