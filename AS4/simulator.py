@@ -102,6 +102,10 @@ def RR_scheduling(process_list, time_quantum ):
     
     return schedule, average_waiting_time
 
+# smallest remaining time first
+# https://en.wikipedia.org/wiki/Shortest_remaining_time
+# - is a preemptive version of shortest job next scheduling
+# - processes will always run until they complete or a new process is added that requires a smaller amount of time.
 def SRTF_scheduling(process_list):
     return (["to be completed, scheduling process_list on SRTF, using process.burst_time to calculate the remaining time of the current process "], 0.0)
 
