@@ -48,40 +48,55 @@ def RR_scheduling(process_list, time_quantum ):
     
     schedule = list()
     waiting_time = 0
+    prev_process_done = False
 
     # while process_list not empty
-    while len(process_list) != 0:
-        if curr_quantum == 0:
-            curr_quantum = time_quantum
+    while len(process_list) != 0 or len(sched_queue) != 0:
+        # get processes where (curr_t >= task_arrival_t)
+        new_process_list = [p for p in process_list if curr_time >= p.arrive_time]
+        process_list = list(set(process_list) - set(new_process_list))
+        
+        if prev_process_done == True:
+            sched_queue.extend(new_process_list)
+        else:
+            # place new processes ahead of last_process, in circular queue
+            try:
+                last_process = sched_queue.pop()
+            except:
+                last_process = None
+            sched_queue.extend(new_process_list)
+            if last_process is not None:
+                sched_queue.append(last_process)
+        
+        print(curr_time, sched_queue)        
+
+        # update total waiting time
+        for p in new_process_list:
+            waiting_time += curr_time - p.arrive_time
     
-        # check process_list for task arrival (curr_time >= task_arrival_t)
-        if curr_time >= process_list[0].arrive_time:
-            # remove task from process_list
-            new_process = process_list.pop(0)
-            # add task into circular queue
-            sched_queue.append(new_process)
-            # update total waiting time
-            waiting_time += curr_time - new_process.arrive_time
-        
-        # pop task from circular queue
-        curr_process = sched_queue.pop(0)
-        # update schedule
-        schedule.append(curr_time, curr_process.id)
-        
+        if len(sched_queue) > 0:
+            # pop task from circular queue
+            curr_process = sched_queue.pop(0)
+            # update schedule
+            schedule.append((curr_time, curr_process.id))
+        else:
+            curr_time += 1
+            continue
+                
         # curr_process not done executing 
-        if curr_quantum < curr_process.burst_time:
+        if time_quantum < curr_process.burst_time:
             curr_time += time_quantum
-            curr_quantum = 0
-            curr_process.burst_time -= curr_quantum
+            curr_process.burst_time -= time_quantum
             # re-insert task into circular queue since it's not done
             sched_queue.append(curr_process)
+            prev_process_done = False
         # curr_process done
         else:
-            curr_time += curr_quantum - curr_process.burst_time
-            curr_quantum -= curr_process.burst_time   
-            
+            curr_time += curr_process.burst_time
+            prev_process_done = True
+           
     # compute average_waiting_time
-    average_waiting_time = waiting_time/float(len(num_tasks))
+    average_waiting_time = waiting_time/float(num_tasks)
     
     return schedule, average_waiting_time
 
