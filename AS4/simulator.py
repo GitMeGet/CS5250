@@ -9,6 +9,7 @@ Output files:
     SRTF.txt
     SJF.txt
 '''
+import copy
 import sys
 
 input_file = 'input.txt'
@@ -41,9 +42,10 @@ def FCFS_scheduling(process_list):
 #Output_1 : Schedule list contains pairs of (time_stamp, proccess_id) indicating the time switching to that proccess_id
 #Output_2 : Average Waiting Time
 def RR_scheduling(process_list, time_quantum ):
+    process_list_copy = copy.deepcopy(process_list)    
     curr_time = 0
     curr_quantum = 0
-    num_tasks = len(process_list)
+    num_tasks = len(process_list_copy)
     sched_queue = list()
     p_started = [0]*num_tasks
     
@@ -52,12 +54,12 @@ def RR_scheduling(process_list, time_quantum ):
     prev_process_done = False
 
     # while process_list not empty
-    while len(process_list) != 0 or len(sched_queue) != 0:
+    while len(process_list_copy) != 0 or len(sched_queue) != 0:
         # get processes where (curr_t >= task_arrival_t)
-        new_process_list = [p for p in process_list if curr_time >= p.arrive_time]
+        new_process_list = [p for p in process_list_copy if curr_time >= p.arrive_time]
         # sort new_process_list by arrival time
         new_process_list = sorted(new_process_list, key=lambda p: p.arrive_time)
-        process_list = list(set(process_list) - set(new_process_list))
+        process_list_copy = list(set(process_list_copy) - set(new_process_list))
         
         if prev_process_done == True:
             sched_queue.extend(new_process_list)
@@ -71,7 +73,7 @@ def RR_scheduling(process_list, time_quantum ):
             if last_process is not None:
                 sched_queue.append(last_process)
         
-        print(curr_time, sched_queue)        
+        #print(curr_time, sched_queue)        
     
         if len(sched_queue) > 0:
             # pop task from circular queue
@@ -110,7 +112,57 @@ def RR_scheduling(process_list, time_quantum ):
 # - is a preemptive version of shortest job next scheduling
 # - processes will always run until they complete or a new process is added that requires a smaller amount of time.
 def SRTF_scheduling(process_list):
-    return (["to be completed, scheduling process_list on SRTF, using process.burst_time to calculate the remaining time of the current process "], 0.0)
+    process_list_copy = copy.deepcopy(process_list)    
+    num_tasks = len(process_list_copy)
+
+    curr_time = 0
+    sched_list = list()
+    prev_process = None
+    schedule = list()
+    
+    p_started = [0]*num_tasks
+    waiting_time = 0
+    
+    while len(process_list_copy) != 0 or len(sched_list) != 0:
+        # add arrived processes into sched_list
+        if len(process_list_copy) != 0 and curr_time >= process_list_copy[0].arrive_time:
+            sched_list.append(process_list_copy.pop(0))
+        if len(sched_list) != 0:
+            # get process w/ lowest burst time 
+            curr_process = min(sched_list, key=lambda p: p.burst_time)
+            sched_list.remove(curr_process)
+            # if curr_p != prev_p, update schedule
+            if prev_process is None or curr_process.burst_time < prev_process.burst_time:
+                schedule.append((curr_time, curr_process.id))
+                print(curr_time, curr_process.id, curr_process.burst_time)
+                print(sched_list)
+            else:
+                # if tie, execute prev_process (don't context switch)
+                curr_process = prev_process
+                
+            # if process is executing for the first time, update total waiting time
+            if p_started[curr_process.id] == 0:
+                waiting_time += curr_time - curr_process.arrive_time
+                p_started[curr_process.id] = 1
+            
+            # update process burst time
+            curr_process.burst_time -= 1
+            # curr_process not done executing
+            if curr_process.burst_time != 0:
+                sched_list.append(curr_process)
+                prev_process = curr_process
+            else:
+                # reset p_started since process ids can be reused
+                p_started[curr_process.id] = 0 
+                prev_process = None
+
+        # increment time
+        curr_time += 1
+
+    # compute average_waiting_time
+    average_waiting_time = waiting_time/float(num_tasks)
+        
+    return schedule, average_waiting_time
 
 def SJF_scheduling(process_list, alpha):
     return (["to be completed, scheduling SJF without using information from process.burst_time"],0.0)
