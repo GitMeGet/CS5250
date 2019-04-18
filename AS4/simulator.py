@@ -45,6 +45,7 @@ def RR_scheduling(process_list, time_quantum ):
     curr_quantum = 0
     num_tasks = len(process_list)
     sched_queue = list()
+    p_started = [0]*num_tasks
     
     schedule = list()
     waiting_time = 0
@@ -71,16 +72,16 @@ def RR_scheduling(process_list, time_quantum ):
                 sched_queue.append(last_process)
         
         print(curr_time, sched_queue)        
-
-        # update total waiting time
-        for p in new_process_list:
-            waiting_time += curr_time - p.arrive_time
     
         if len(sched_queue) > 0:
             # pop task from circular queue
             curr_process = sched_queue.pop(0)
             # update schedule
             schedule.append((curr_time, curr_process.id))
+            # if process is executing for the first time, update total waiting time
+            if p_started[curr_process.id] == 0:
+                waiting_time = curr_time - curr_process.arrive_time
+                p_started[curr_process.id] = 1
         else:
             curr_time += 1
             continue
@@ -95,6 +96,8 @@ def RR_scheduling(process_list, time_quantum ):
         # curr_process done
         else:
             curr_time += curr_process.burst_time
+            # reset p_started since process ids can be reused
+            p_started[curr_process.id] = 0 
             prev_process_done = True
            
     # compute average_waiting_time
