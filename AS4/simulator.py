@@ -164,9 +164,54 @@ def SRTF_scheduling(process_list):
         
     return schedule, average_waiting_time
 
+# non preemptive
 def SJF_scheduling(process_list, alpha):
-    return (["to be completed, scheduling SJF without using information from process.burst_time"],0.0)
+    process_list_copy = copy.deepcopy(process_list)
+    num_tasks = len(process_list_copy)
 
+    curr_time = 0
+    sched_list = list()
+    pred_list = [-1]*num_tasks
+    
+    schedule = list()
+    waiting_time = 0
+    
+    while len(process_list_copy) != 0 or len(sched_list) != 0:
+        # add process where (curr_t >= task_arrival_t) to sched_list
+        for p in process_list_copy:
+            if curr_time >= p.arrive_time:
+                if pred_list[p.id] == -1:
+                    # initial guess for each process is 5 cpu cycles
+                    predicted_burst_time = pred_list[p.id] = 5
+                else:
+                    predicted_burst_time = pred_list[p.id]
+                process_list_copy.remove(p)
+                sched_list.append((p, predicted_burst_time))
+        
+        if len(sched_list) != 0:
+            # choose process from sched_list based on predicted_burst_time
+            # how to decide ties? earliest added to sched_list
+            curr_process_tuple = min(sched_list, key=lambda tuple: tuple[1])
+            curr_process = curr_process_tuple[0]
+            print(sched_list)
+            print(curr_process)
+            # update schedule
+            schedule.append((curr_time, curr_process.id))
+            # update waiting time
+            waiting_time += curr_time - curr_process.arrive_time
+            # update pred_list to predict next cpu burst of process when it finishes
+            pred_list[curr_process.id] = alpha*curr_process.burst_time + (1-alpha)*pred_list[curr_process.id]
+            # update curr_time
+            curr_time += curr_process.burst_time
+            # remove from sched_list
+            sched_list.remove(curr_process_tuple)
+        else:
+            curr_time += 1
+
+    # compute average_waiting_time
+    average_waiting_time = waiting_time/float(num_tasks)
+        
+    return schedule, average_waiting_time
 
 def read_input():
     result = []
