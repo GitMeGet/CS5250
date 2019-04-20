@@ -156,11 +156,9 @@ def SRTF_scheduling(process_list):
 # non preemptive
 def SJF_scheduling(process_list, alpha):
     process_list_copy = copy.deepcopy(process_list)
-    num_tasks = len(process_list_copy)
-
     curr_time = 0
     sched_list = list()
-    pred_list = [-1]*num_tasks
+    pred_list = [-1]*len(process_list_copy)
     
     schedule = list()
     waiting_time = 0
@@ -182,8 +180,6 @@ def SJF_scheduling(process_list, alpha):
             # how to decide ties? earliest added to sched_list
             curr_process_tuple = min(sched_list, key=lambda tuple: tuple[1])
             curr_process = curr_process_tuple[0]
-            print(sched_list)
-            print(curr_process)
             # update schedule
             schedule.append((curr_time, curr_process.id))
             # update waiting time
