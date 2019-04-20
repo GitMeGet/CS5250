@@ -44,8 +44,6 @@ def FCFS_scheduling(process_list):
 #Output_2 : Average Waiting Time
 def RR_scheduling(process_list, time_quantum ):
     process_list_copy = copy.deepcopy(process_list)
-    num_tasks = len(process_list_copy)
-
     curr_time = 0
     sched_queue = list()
     prev_process_done = False
@@ -82,7 +80,7 @@ def RR_scheduling(process_list, time_quantum ):
             # update schedule
             schedule.append((curr_time, curr_process.id))
             # update total waiting time
-            waiting_time = curr_time - curr_process.last_executed_time
+            waiting_time += curr_time - curr_process.last_executed_time
         else:
             curr_time += 1
             continue
@@ -101,7 +99,8 @@ def RR_scheduling(process_list, time_quantum ):
             prev_process_done = True
            
     # compute average_waiting_time
-    average_waiting_time = waiting_time/float(num_tasks)
+    # divisor: count += 1 when a process is scheduled
+    average_waiting_time = waiting_time/float(len(schedule))
     
     return schedule, average_waiting_time
 
