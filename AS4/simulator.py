@@ -20,6 +20,7 @@ class Process:
         self.id = id
         self.arrive_time = arrive_time
         self.burst_time = burst_time
+        self.last_executed_time = arrive_time
     #for printing purpose
     def __repr__(self):
         return ('[id %d : arrival_time %d,  burst_time %d]'%(self.id, self.arrive_time, self.burst_time))
@@ -42,16 +43,16 @@ def FCFS_scheduling(process_list):
 #Output_1 : Schedule list contains pairs of (time_stamp, proccess_id) indicating the time switching to that proccess_id
 #Output_2 : Average Waiting Time
 def RR_scheduling(process_list, time_quantum ):
-    process_list_copy = copy.deepcopy(process_list)    
-    curr_time = 0
-    curr_quantum = 0
+    process_list_copy = copy.deepcopy(process_list)
     num_tasks = len(process_list_copy)
+
+    curr_time = 0
     sched_queue = list()
-    p_started = [0]*num_tasks
+    prev_process_done = False
     
+    # to be returned by function
     schedule = list()
     waiting_time = 0
-    prev_process_done = False
 
     # while process_list not empty
     while len(process_list_copy) != 0 or len(sched_queue) != 0:
@@ -80,10 +81,8 @@ def RR_scheduling(process_list, time_quantum ):
             curr_process = sched_queue.pop(0)
             # update schedule
             schedule.append((curr_time, curr_process.id))
-            # if process is executing for the first time, update total waiting time
-            if p_started[curr_process.id] == 0:
-                waiting_time = curr_time - curr_process.arrive_time
-                p_started[curr_process.id] = 1
+            # update total waiting time
+            waiting_time = curr_time - curr_process.last_executed_time
         else:
             curr_time += 1
             continue
@@ -92,14 +91,13 @@ def RR_scheduling(process_list, time_quantum ):
         if time_quantum < curr_process.burst_time:
             curr_time += time_quantum
             curr_process.burst_time -= time_quantum
+            curr_process.last_executed_time = curr_time
             # re-insert task into circular queue since it's not done
             sched_queue.append(curr_process)
             prev_process_done = False
         # curr_process done
         else:
             curr_time += curr_process.burst_time
-            # reset p_started since process ids can be reused
-            p_started[curr_process.id] = 0 
             prev_process_done = True
            
     # compute average_waiting_time
