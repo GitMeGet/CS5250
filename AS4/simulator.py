@@ -78,9 +78,11 @@ def RR_scheduling(process_list, time_quantum ):
             # pop task from circular queue
             curr_process = sched_queue.pop(0)
             # update schedule
-            schedule.append((curr_time, curr_process.id))
-            # update total waiting time
-            waiting_time += curr_time - curr_process.last_executed_time
+            if len(schedule) == 0:
+                schedule.append((curr_time, curr_process.id))
+            elif len(schedule) > 0 and schedule[-1][1] != curr_process.id:
+                schedule.append((curr_time, curr_process.id))
+                
         else:
             curr_time += 1
             continue
